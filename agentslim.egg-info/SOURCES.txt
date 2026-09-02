@@ -4,6 +4,8 @@ agentslim/__init__.py
 agentslim/ablations.py
 agentslim/harness.py
 agentslim/llm.py
+agentslim/minimize.py
+agentslim/optimize.py
 agentslim/system.py
 agentslim/trace.py
 agentslim.egg-info/PKG-INFO
@@ -11,3 +13,7 @@ agentslim.egg-info/SOURCES.txt
 agentslim.egg-info/dependency_links.txt
 agentslim.egg-info/requires.txt
 agentslim.egg-info/top_level.txt
+agentslim/adapters/__init__.py
+agentslim/adapters/crewai_shim.py
+agentslim/adapters/langchain_shim.py
+agentslim/adapters/litellm_shim.py

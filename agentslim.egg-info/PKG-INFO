@@ -7,5 +7,7 @@ Provides-Extra: openai
 Requires-Dist: openai>=1.40; extra == "openai"
 Provides-Extra: anthropic
 Requires-Dist: anthropic>=0.34; extra == "anthropic"
+Provides-Extra: gemini
+Requires-Dist: google-genai>=1.0; extra == "gemini"
 Provides-Extra: dev
 Requires-Dist: pytest>=8; extra == "dev"

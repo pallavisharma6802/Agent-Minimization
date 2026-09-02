@@ -5,5 +5,8 @@ anthropic>=0.34
 [dev]
 pytest>=8
 
+[gemini]
+google-genai>=1.0
+
 [openai]
 openai>=1.40

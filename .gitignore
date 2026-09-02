@@ -8,3 +8,4 @@ results/*.csv
 .DS_Store
 .pytest_cache/
 .llm_cache/
+.venv-chatdev/
