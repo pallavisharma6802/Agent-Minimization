@@ -45,6 +45,12 @@ measurable quality loss.**
 - **langgraph_pipeline**: holds even on deliberately hard reasoning problems
   (modular arithmetic, logic puzzles, the "missing dollar" riddle). The
   `researcher → analyst → writer` decomposition doesn't beat one writer.
+- **debate_hard** (ensemble case, the one "More Agents" says should win): 4
+  independent solvers + majority vote vs 1 solver, on 12 competition-style
+  integer-answer problems (CRT, divisor counts, `2^40 mod 100`, etc.).
+  **1.000 = 1.000 = 1.000** — `gemini-3.5-flash` one-shots all of them, so the
+  vote buys nothing. We could not find a task hard enough for this model to make
+  the ensemble pay, within the time budget.
 
 This lines up with the external evidence: UC Berkeley's MAST puts
 verification/review agents among the top failure sources, and Cognition's
@@ -56,10 +62,12 @@ coordination cost. We now have it measured on real code.
 ## What this does NOT show (be honest)
 
 1. **No task here needs multi-agent.** `gemini-3.5-flash` is strong enough to
-   one-shot every one of these, so "1 agent is enough" is partly a statement about
-   the model. The experiments that would flip this — parallel search with a
-   capable aggregator, tool-use division of labour, >100k-token context — are not
-   built yet.
+   one-shot every one of these — including the "hard" competition-math set built
+   specifically to break it (debate_hard: still 1.000). So "1 agent is enough" is
+   partly a statement about the model. The experiments that would flip this —
+   parallel search with a capable aggregator on genuinely model-breaking problems,
+   tool-use division of labour, >100k-token context — are not built yet. This is
+   the single most important gap to close before the thesis is publishable.
 2. **Metrics are coarse.** The game-code proxy is flat at 0.667; the repo's
    screenplay scorer only ranges 9.0–9.5; the judge is the same model family.
    Stronger metrics (headless game execution, pairwise judging, a bigger judge)
