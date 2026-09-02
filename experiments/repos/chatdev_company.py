@@ -93,6 +93,29 @@ TASKS = [
                    "(Fizz for multiples of 3, Buzz for 5, FizzBuzz for both, else the number)."),
         "check": [(["5"], "1\n2\nFizz\n4\nBuzz")],
     },
+    # --- bug-prone: a lone coder usually ships an off-by-one / missed edge case ---
+    {
+        "name": "RomanToInt",
+        "prompt": ("Develop a program, entry point main.py, that takes a Roman numeral string "
+                   "as sys.argv[1] and prints its integer value. Must handle subtractive forms "
+                   "(IV=4, IX=9, XL=40, XC=90, CD=400, CM=900)."),
+        "check": [(["IV"], "4"), (["XL"], "40"), (["MCMXciv".upper()], "1994"),
+                  (["LVIII"], "58"), (["CDXLIV"], "444")],
+    },
+    {
+        "name": "NthPrime",
+        "prompt": ("Develop a program, entry point main.py, that takes a positive integer n as "
+                   "sys.argv[1] and prints the n-th prime number (1-indexed, so n=1 -> 2)."),
+        "check": [(["1"], "2"), (["6"], "13"), (["25"], "97"), (["100"], "541")],
+    },
+    {
+        "name": "BalancedBrackets",
+        "prompt": ("Develop a program, entry point main.py, that takes a string as sys.argv[1] "
+                   "and prints 'True' if all (), [], {} brackets are balanced and correctly "
+                   "nested, else 'False'. Ignore non-bracket characters."),
+        "check": [(["(a[b]{c})"], "True"), (["([)]"], "False"), (["{{}}"], "True"),
+                  (["(]"], "False"), (["a(b)c"], "True")],
+    },
 ]
 
 
