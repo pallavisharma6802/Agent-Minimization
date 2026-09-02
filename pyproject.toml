@@ -1,0 +1,18 @@
+[project]
+name = "agentslim"
+version = "0.0.1"
+description = "Measure how much of a multi-agent system is load-bearing, and propose safe reductions."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+openai = ["openai>=1.40"]
+anthropic = ["anthropic>=0.34"]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["agentslim*"]
