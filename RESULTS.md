@@ -1,4 +1,49 @@
-# Results — first pass (2026-09-02, overnight autonomous run)
+# Results (2026-09-02)
+
+> **Update — method reframe.** The objective is no longer "shrink to 1." `pareto_scan`
+> now sweeps *every* team size, records quality vs cost at each, and recommends the
+> **knee** — the smallest team whose quality still matches the best. A system that
+> genuinely needs 4 agents reports 4. On the ChatDev repo below the answer is **3, not 1.**
+
+---
+
+## Real repo #4 — OpenBMB/ChatDev (~26k★), a 7-role virtual software company
+
+The strongest test so far: a famous multi-agent repo, a **real metric** (generate a
+program, then *execute it* against hidden functional tests), on **genuinely hard
+tasks** (LRU cache, RPN eval with truncating division, topological sort with cycle
+detection + lexicographic tie-break).
+
+Ablation = which ChatDev *phases* run → which of the 6 agents participate.
+
+| config | agents | test-pass score | LLM calls / build |
+|---|---|---|---|
+| full pipeline | 6 | **1.000** | 14.0 |
+| drop EnvironmentDoc + Manual | 6 | 1.000 | 11.0 |
+| drop Code Review | 5 | 1.000 | 8.0 |
+| drop Test | 5 | 1.000 | 14.0 |
+| drop Review **and** Test | 4 | 1.000 | 8.0 |
+| **coding core only** (CEO+CTO+Programmer) | **3** | **1.000** | **3.2** |
+
+Every config passes **every** hidden test on **every** task. ChatDev's Code Reviewer
+and Test Engineer agents do not change a single functional outcome here; the 3-agent
+core produces verified-correct code (topological sort etc.) at **3.2 calls/build vs
+14 — a 77% cut**. Real API spend for the whole sweep: **$0.17**.
+
+`pareto_scan` recommendation: **k = 3** (the coding core). Not 1 — the pipeline
+structurally needs language-choice → code → complete. But not 6.
+
+This matches UC Berkeley's MAST finding that ChatDev's problems are coordination
+overhead, not missing capability.
+
+**Caveat:** `gemini-3.5-flash` nails these tasks in the Coding phase, so Review/Test
+have nothing to catch. The score is pinned at 1.000 — no headroom to *see* a benefit.
+A weaker coding model, or gnarlier multi-file specs, might change this. What we can
+say firmly: on this task set, adding the review/test agents was pure cost.
+
+---
+
+# Earlier results (pilots + CrewAI/LangGraph)
 
 All runs: **Gemini `gemini-3.5-flash` via Vertex AI** (`location=global`, project
 `agent-min`), **GCP free-trial credits only** — never activated to paid. Total
