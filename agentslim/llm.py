@@ -38,11 +38,10 @@ _PRICING = {
     "gemini-3.5-flash": (0.30, 2.50),
     "gemini-flash-latest": (0.30, 2.50),
     # Groq (OpenAI-compatible). prices ~ per 1M tok.
-    "llama-3.1-8b-instant": (0.05, 0.08),
-    "llama-3.3-70b-versatile": (0.59, 0.79),
     "openai/gpt-oss-20b": (0.10, 0.50),
-    "qwen/qwen3-32b": (0.29, 0.59),
-    "moonshotai/kimi-k2-instruct": (1.00, 3.00),
+    "openai/gpt-oss-120b": (0.15, 0.75),
+    "qwen/qwen3.6-27b": (0.29, 0.59),
+    "allam-2-7b": (0.05, 0.10),
 }
 
 
