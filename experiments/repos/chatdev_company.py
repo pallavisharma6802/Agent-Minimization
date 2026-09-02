@@ -72,27 +72,6 @@ CONFIGS = {
 
 # --- tasks: spec + hidden functional check ---------------------------
 TASKS = [
-    {
-        "name": "ExprCalc",
-        "prompt": ("Develop a command-line calculator. It takes a single arithmetic "
-                   "expression string as sys.argv[1] (supporting + - * / parentheses and "
-                   "integers) and prints only the numeric result to stdout. Entry point main.py."),
-        "check": [(["2+3*4"], "14"), (["(10-2)/4"], "2"), (["7*7"], "49")],
-    },
-    {
-        "name": "WordCount",
-        "prompt": ("Develop a command-line tool. Given a filename as sys.argv[1], it prints "
-                   "the number of words in that file to stdout (words separated by whitespace). "
-                   "Entry point main.py."),
-        "check": "wordcount",
-    },
-    {
-        "name": "FizzBuzz",
-        "prompt": ("Develop a program with entry point main.py that takes an integer N as "
-                   "sys.argv[1] and prints the FizzBuzz sequence from 1 to N, one item per line "
-                   "(Fizz for multiples of 3, Buzz for 5, FizzBuzz for both, else the number)."),
-        "check": [(["5"], "1\n2\nFizz\n4\nBuzz")],
-    },
     # --- bug-prone: a lone coder usually ships an off-by-one / missed edge case ---
     {
         "name": "RomanToInt",
@@ -115,6 +94,35 @@ TASKS = [
                    "nested, else 'False'. Ignore non-bracket characters."),
         "check": [(["(a[b]{c})"], "True"), (["([)]"], "False"), (["{{}}"], "True"),
                   (["(]"], "False"), (["a(b)c"], "True")],
+    },
+    # --- genuinely hard: subtle algorithm / edge cases a one-shot often gets wrong ---
+    {
+        "name": "LRUCache",
+        "prompt": ("Develop main.py exposing a class LRUCache(capacity) with get(key)->value or -1, "
+                   "and put(key,value), evicting the least-recently-used entry at capacity. "
+                   "main.py must read commands from sys.argv[1] as a semicolon list like "
+                   "'put 1 1;put 2 2;get 1;put 3 3;get 2;get 3' and print the space-joined "
+                   "results of each get (ints, -1 for miss)."),
+        "check": [(["put 1 1;put 2 2;get 1;put 3 3;get 2;get 3"], "1 -1 3"),
+                  (["put 2 1;put 2 2;get 2;put 1 1;put 4 1;get 2"], "2 -1"),
+                  (["get 5"], "-1")],
+    },
+    {
+        "name": "RPNCalc",
+        "prompt": ("Develop main.py that evaluates a Reverse Polish Notation expression given as "
+                   "sys.argv[1] (space-separated tokens: integers and + - * /, integer division "
+                   "truncating toward zero) and prints the integer result."),
+        "check": [(["3 4 +"], "7"), (["5 1 2 + 4 * + 3 -"], "14"),
+                  (["10 6 9 3 + -11 * / * 17 + 5 +"], "22"), (["7 2 /"], "3"), (["-7 2 /"], "-3")],
+    },
+    {
+        "name": "TopoSort",
+        "prompt": ("Develop main.py that reads a DAG from sys.argv[1] as edges like "
+                   "'a>b,a>c,b>d,c>d' and prints one valid topological order of the nodes as a "
+                   "space-separated list. If there is a cycle, print 'CYCLE'. Break ties by "
+                   "choosing the lexicographically smallest available node."),
+        "check": [(["a>b,a>c,b>d,c>d"], "a b c d"), (["b>a,a>b"], "CYCLE"),
+                  (["x>y"], "x y"), (["c>a,c>b,a>d,b>d"], "c a b d")],
     },
 ]
 
@@ -147,7 +155,30 @@ def score_project(proj_dir: str, task: dict) -> float:
     with tempfile.TemporaryDirectory() as tmp:
         for f in pys:
             shutil.copy(os.path.join(proj_dir, f), tmp)
-        if task["check"] == "wordcount":
+        # ChatDev always bolts on an optional tkinter GUI; the CLI path never uses
+        # it, but `import tkinter` at module top crashes on a headless/no-_tkinter
+        # interpreter. Drop a stub `tkinter.py` (+ submodules) in the run dir so
+        # the CLI branch executes. A GUI-only failure is not what we measure.
+        _A = ("class _A:\n"
+              "  def __init__(self,*a,**k):pass\n"
+              "  def __call__(self,*a,**k):return _A()\n"
+              "  def __getattr__(self,n):return _A()\n"
+              "  def __enter__(self,*a):return _A()\n"
+              "  def __exit__(self,*a):return False\n"
+              "def __getattr__(n):return _A()\n")
+        os.makedirs(os.path.join(tmp, "tkinter"), exist_ok=True)
+        open(os.path.join(tmp, "tkinter", "__init__.py"), "w").write(
+            _A + "".join(f"{n}=_A()\n" for n in
+                         ("Tk", "Toplevel", "Label", "Button", "Entry", "Frame",
+                          "Text", "Scrollbar", "Canvas", "Menu", "StringVar",
+                          "IntVar", "DoubleVar", "BooleanVar", "END", "BOTH",
+                          "LEFT", "RIGHT", "TOP", "BOTTOM", "X", "Y", "W", "E",
+                          "N", "S", "CENTER", "HORIZONTAL", "VERTICAL", "DISABLED",
+                          "NORMAL", "SUNKEN", "RAISED", "GROOVE", "FLAT")))
+        for sub in ("messagebox", "filedialog", "ttk", "font", "simpledialog",
+                    "colorchooser", "scrolledtext"):
+            open(os.path.join(tmp, "tkinter", f"{sub}.py"), "w").write(_A)
+        if task.get("check") == "wordcount":
             open(os.path.join(tmp, "in.txt"), "w").write("the quick brown fox jumps")
             checks = [(["in.txt"], "5")]
         for argv, expected in checks:

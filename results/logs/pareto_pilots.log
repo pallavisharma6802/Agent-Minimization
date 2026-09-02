@@ -1,0 +1,13 @@
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+=== math_committee knee_k= 1 agents= ['planner', 'solver', 'checker']
+  calls=4.0 acc=1.000 rm=None
+  calls=3.0 acc=1.000 rm=identity:planner
+  calls=2.0 acc=1.000 rm=identity:solver
+  calls=1.0 acc=1.000 rm=remove:formatter
+=== debate knee_k= 1 agents= ['solver4']
+  calls=5.0 acc=1.000 rm=None
+  calls=4.0 acc=1.000 rm=remove:solver1
+  calls=3.0 acc=1.000 rm=remove:solver2
+  calls=2.0 acc=1.000 rm=remove:solver3
+  calls=1.0 acc=1.000 rm=remove:aggregator
+real spend 0.0183 123
