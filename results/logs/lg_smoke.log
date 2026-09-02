@@ -1,0 +1,5 @@
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+SMOKE team scores: [0.0, 0.0, 1.0, 1.0, 1.0, 1.0]
+calls/q: [1, 1, 1, 1, 1, 1]
+   supervisor | '{\n  "tool": "transfer_to_analyst",\n  "args": {\n    "query": "A bat and'
+real spend 0.0012 12
