@@ -39,6 +39,33 @@ def _estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
+class SpendExceeded(RuntimeError):
+    pass
+
+
+class _Meter:
+    """Process-wide running cost. Hard-aborts a run before it can eat credits.
+    Cap via AGENTSLIM_MAX_USD (default $5). Set to 0 to disable."""
+    def __init__(self) -> None:
+        self.spent = 0.0
+        self.calls = 0
+
+    @property
+    def cap(self) -> float:
+        return float(os.environ.get("AGENTSLIM_MAX_USD", "5"))
+
+    def charge(self, usd: float) -> None:
+        self.spent += usd
+        self.calls += 1
+        if self.cap > 0 and self.spent > self.cap:
+            raise SpendExceeded(
+                f"cost ceiling hit: ${self.spent:.4f} > ${self.cap:.2f} after {self.calls} calls "
+                f"(raise AGENTSLIM_MAX_USD to continue)")
+
+
+METER = _Meter()
+
+
 @dataclass
 class LLM:
     model: str = "mock-small"
@@ -55,6 +82,9 @@ class LLM:
         out_tok = _estimate_tokens(out)
         pin, pout = _PRICING.get(self.model, (0.5, 1.5))
         cost = (in_tok * pin + out_tok * pout) / 1_000_000
+
+        if self.backend != "mock":
+            METER.charge(cost)
 
         tr = current_trace()
         if tr is not None:
