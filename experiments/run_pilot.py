@@ -14,7 +14,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agentslim import evaluate, propose  # noqa: E402
+from agentslim import evaluate, greedy_minimize, propose  # noqa: E402
 
 
 def main() -> None:
@@ -38,6 +38,17 @@ def main() -> None:
         print(f"  {v['agent']:<10} {v['kind']:<11} -> {v['classification']:<22} "
               f"move={v['best_move']:<16} dAcc={v['delta_accuracy']:+.3f} save={v['cost_saving_frac']:.2f}")
     print("\nheadline:", json.dumps(report["headline"], indent=2))
+
+    mr = greedy_minimize(sysm, tasks, repeats=repeats)
+    report["minimize"] = mr.ledger()
+    print("\ngreedy minimize:")
+    for s in mr.steps:
+        print(f"  {s.move:<22} acc={s.accuracy:.3f} (d{s.delta_vs_original:+.3f}) "
+              f"agents={s.n_agents} calls/task={s.n_calls}")
+    led = report["minimize"]
+    print(f"  => {led['original']['avg_calls']:.1f} -> {led['final']['avg_calls']:.1f} calls/task, "
+          f"cost -{led['cost_saving_frac']*100:.0f}%, acc {led['accuracy_change']:+.3f}, "
+          f"final agents: {led['final_agents']}")
 
     os.makedirs("results", exist_ok=True)
     path = f"results/{name}.json"
