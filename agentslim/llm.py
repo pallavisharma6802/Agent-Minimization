@@ -81,7 +81,17 @@ class LLM:
     def _gemini(self, system: str, user: str) -> str:
         if self._client is None:
             from google import genai
-            self._client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+            if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").lower() in ("1", "true"):
+                # Vertex AI: auth via Application Default Credentials, billed to
+                # GOOGLE_CLOUD_PROJECT (consumes the GCP free-trial credits).
+                self._client = genai.Client(
+                    vertexai=True,
+                    project=os.environ["GOOGLE_CLOUD_PROJECT"],
+                    location=os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1"),
+                )
+            else:
+                # Google AI Studio: simple API key, has a no-billing free tier.
+                self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         from google.genai import types
         r = self._client.models.generate_content(
             model=self.model,
