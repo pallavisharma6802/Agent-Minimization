@@ -38,8 +38,32 @@ overhead, not missing capability.
 
 **Caveat:** `gemini-3.5-flash` nails these tasks in the Coding phase, so Review/Test
 have nothing to catch. The score is pinned at 1.000 — no headroom to *see* a benefit.
-A weaker coding model, or gnarlier multi-file specs, might change this. What we can
-say firmly: on this task set, adding the review/test agents was pure cost.
+So we re-ran with a **deliberately weak coder** ↓.
+
+### ChatDev with a weak coder (Groq `openai/gpt-oss-20b` as the Programmer)
+
+Everyone else (CTO, Code Reviewer, Test Engineer, judge) stays on Gemini. Same
+hard tasks, now n=2, 5 tasks. The weak coder ships real bugs → scores fall from
+1.000, giving the review/test agents something to catch.
+
+| config | agents | test-pass score | calls/build |
+|---|---|---|---|
+| full pipeline | 6 | 0.480 | 14.6 |
+| drop Code Review | 5 | 0.480 | 8.6 |
+| drop Review **and** Test | 4 | 0.480 | 8.6 |
+| **coding core only** (CEO+CTO+Programmer) | **3** | **0.640** | **2.6** |
+
+**The 3-agent core scores *higher* than the full 6-agent pipeline (0.64 vs 0.48), at
+1/6 the LLM calls.** The four configs that keep any review/test phase produce
+*byte-identical* results — those agents change nothing. And the DemandAnalysis /
+Manual / extra-CodeComplete cycles in the full pipeline actively break tasks the
+3-agent core gets right (RomanToInt, NthPrime). More agents → worse **and** 5×
+more expensive. Real spend: **$0.02**.
+
+**Bottom line for ChatDev:** strong coder → 6 agents ≈ 3 agents (cut for free);
+weak coder → 6 agents **<** 3 agents (cutting *improves* quality). `pareto_scan`
+says **k = 3** either way. This is the sharpest evidence in the project that
+deployed multi-agent pipelines are over-built.
 
 ---
 
