@@ -1,10 +1,6 @@
-Traceback (most recent call last):
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/game_builder_crew.py", line 171, in <module>
-    accs, traces = run_config(specs=specs, repeats=repeats, **kw)
-                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/game_builder_crew.py", line 141, in run_config
-    install_shim()
-    ~~~~~~~~~~~~^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/agentslim/adapters/litellm_shim.py", line 59, in install
-    import litellm
-ModuleNotFoundError: No module named 'litellm'
+baseline (3 agents)      acc=0.667  calls/run=3.0  $0.02532  churn={'Software Quality Control Engineer': 0.024, 'Chief Software Quality Control Engineer': 0.0}  (spent $0.152 total)
+no chief_qa (2)          acc=0.667  calls/run=2.0  $0.01601  churn={'Software Quality Control Engineer': 0.024}  (spent $0.248 total)
+engineer only (1)        acc=0.667  calls/run=1.0  $0.00756  churn={}  (spent $0.293 total)
+merge qa->chief (2)      acc=0.667  calls/run=2.0  $0.01601  churn={'Software Quality Control Engineer': 0.031}  (spent $0.389 total)
+
+total spend $0.3894 / 48 calls -> results/game_builder_crew.json

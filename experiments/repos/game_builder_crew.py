@@ -161,6 +161,23 @@ def run_config(keep=None, merges=None, specs=("example3_snake",), repeats=1):
     return accs, traces
 
 
+def _churn(traces) -> dict:
+    """How much did each downstream agent actually change the code it received?
+    ~0 => the agent is a pass-through (pure cost, no edit)."""
+    import difflib
+    from collections import defaultdict
+    ratios = defaultdict(list)
+    for t in traces:
+        prev = None
+        for c in t.calls:
+            code = _extract_code(c.output)
+            if prev is not None:
+                r = 1 - difflib.SequenceMatcher(None, prev, code).ratio()
+                ratios[c.agent].append(r)
+            prev = code
+    return {a: round(sum(v) / len(v), 3) for a, v in ratios.items() if v}
+
+
 if __name__ == "__main__":
     import json
     from agentslim.llm import METER
@@ -179,11 +196,18 @@ if __name__ == "__main__":
         calls = sum(t.n_calls for t in traces) / len(traces)
         cost = sum(t.cost_usd for t in traces) / len(traces)
         out[name] = {"acc_mean": round(sum(accs) / len(accs), 3), "accs": accs,
-                     "avg_calls": round(calls, 2), "avg_cost_usd": round(cost, 6)}
+                     "avg_calls": round(calls, 2), "avg_cost_usd": round(cost, 6),
+                     "downstream_code_churn": _churn(traces)}
         print(f"{name:<24} acc={out[name]['acc_mean']:.3f}  calls/run={calls:.1f}  "
-              f"${cost:.5f}  (spent ${METER.spent:.3f} total)")
+              f"${cost:.5f}  churn={out[name]['downstream_code_churn']}  "
+              f"(spent ${METER.spent:.3f} total)")
     os.makedirs(os.path.join(_ROOT, "results"), exist_ok=True)
     with open(os.path.join(_ROOT, "results", "game_builder_crew.json"), "w") as f:
-        json.dump({"configs": out, "spend": {"usd": round(METER.spent, 5), "calls": METER.calls},
+        json.dump({"repo": "crewAIInc/crewA-examples :: crews/game-builder-crew",
+                   "configs": out,
+                   "spend": {"live_usd": round(METER.spent, 5), "live_calls": METER.calls,
+                             "modeled_usd": round(METER.modeled, 5),
+                             "total_calls": METER.total_calls},
                    "model": os.environ.get("AGENTSLIM_MODEL")}, f, indent=2)
-    print(f"\ntotal spend ${METER.spent:.4f} / {METER.calls} calls -> results/game_builder_crew.json")
+    print(f"\nreal API spend ${METER.spent:.4f} over {METER.calls} live calls "
+          f"(modeled system cost ${METER.modeled:.4f}) -> results/game_builder_crew.json")

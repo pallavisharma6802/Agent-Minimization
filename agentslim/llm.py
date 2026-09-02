@@ -53,20 +53,25 @@ class _Meter:
     """Process-wide running cost. Hard-aborts a run before it can eat credits.
     Cap via AGENTSLIM_MAX_USD (default $5). Set to 0 to disable."""
     def __init__(self) -> None:
-        self.spent = 0.0
-        self.calls = 0
+        self.spent = 0.0        # real API $ this process (cache misses only)
+        self.modeled = 0.0      # what the traced calls would cost uncached
+        self.calls = 0          # real API calls
+        self.total_calls = 0    # incl. cache hits
 
     @property
     def cap(self) -> float:
         return float(os.environ.get("AGENTSLIM_MAX_USD", "5"))
 
-    def charge(self, usd: float) -> None:
-        self.spent += usd
-        self.calls += 1
+    def charge(self, usd: float, live: bool = True) -> None:
+        self.modeled += usd
+        self.total_calls += 1
+        if live:
+            self.spent += usd
+            self.calls += 1
         if self.cap > 0 and self.spent > self.cap:
             raise SpendExceeded(
-                f"cost ceiling hit: ${self.spent:.4f} > ${self.cap:.2f} after {self.calls} calls "
-                f"(raise AGENTSLIM_MAX_USD to continue)")
+                f"cost ceiling hit: ${self.spent:.4f} live > ${self.cap:.2f} after "
+                f"{self.calls} real calls (raise AGENTSLIM_MAX_USD to continue)")
 
 
 METER = _Meter()
@@ -157,7 +162,7 @@ class LLM:
         cost = (in_tok * pin + out_tok * pout) / 1_000_000
 
         if self.backend != "mock":
-            METER.charge(cost)
+            METER.charge(cost, live=cached is None)
 
         tr = current_trace()
         if tr is not None:
