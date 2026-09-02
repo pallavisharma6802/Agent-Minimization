@@ -28,34 +28,17 @@ from autogen_agentchat.agents import AssistantAgent          # noqa: E402
 from autogen_agentchat.conditions import MaxMessageTermination, TextMentionTermination  # noqa: E402
 from autogen_agentchat.teams import SelectorGroupChat, RoundRobinGroupChat        # noqa: E402
 from autogen_core.models import ModelInfo, UserMessage       # noqa: E402
-from autogen_ext.models.openai import OpenAIChatCompletionClient  # noqa: E402
+from agentslim.adapters.autogen_shim import GeminiChatClient  # noqa: E402
 
 GROQ = dict(base_url="https://api.groq.com/openai/v1", api_key=os.environ["GROQ_API_KEY"],
             model_info=ModelInfo(vision=False, function_calling=True, json_output=False,
                                  family="unknown", structured_output=False))
-WORKER = os.environ.get("AGENTSLIM_MODEL_CODER", "qwen/qwen3.6-27b")
-JUDGE = os.environ.get("AGENTSLIM_JUDGE", "openai/gpt-oss-120b")
-
-
-class _Retry(OpenAIChatCompletionClient):
-    """Groq free tier is ~8k tokens/min — wrap create() with 429 backoff."""
-    async def create(self, *a, **k):
-        import asyncio as _aio
-        delay = 3.0
-        for i in range(8):
-            try:
-                return await super().create(*a, **k)
-            except Exception as e:  # noqa: BLE001
-                if "429" not in str(e) and "rate_limit" not in str(e).lower():
-                    raise
-                m = re.search(r"try again in ([\d.]+)s", str(e))
-                await _aio.sleep(float(m.group(1)) + 1 if m else delay)
-                delay = min(delay * 1.5, 30)
-        return await super().create(*a, **k)
+WORKER = os.environ.get("AGENTSLIM_MODEL_CODER", os.environ.get("AGENTSLIM_MODEL","gemini-3.5-flash"))
+JUDGE = os.environ.get("AGENTSLIM_JUDGE", "gemini-3.5-flash")
 
 
 def _mc(model):
-    return _Retry(model=model, temperature=0.0, max_tokens=700, **GROQ)
+    return GeminiChatClient(model=model)
 
 
 ROLES = {
@@ -101,10 +84,10 @@ def build_team(keep):
 
 async def _judge(q, ref, ans) -> float:
     mc = _mc(JUDGE)
-    r = await mc.create([UserMessage(
-        content=(f"Question: {q}\nReference answer: {ref}\nCandidate answer: {ans}\n"
-                 "Is the candidate correct? Reply with only YES or NO."), source="user")])
-    return 1.0 if "yes" in str(r.content).lower()[:5] else 0.0
+    from agentslim.llm import LLM
+    out = LLM(model=JUDGE).complete("Reply with only YES or NO.",
+        f"Question: {q}\nReference: {ref}\nCandidate: {ans}\nIs the candidate correct?", agent="judge")
+    return 1.0 if "yes" in out.lower()[:6] else 0.0
 
 
 async def run_config(keep, repeats=1):
@@ -125,7 +108,6 @@ async def run_config(keep, repeats=1):
             ans = m.group(1).strip() if m else str(ans)
             scores.append(await _judge(q, ref, ans))
             msg_counts.append(nmsg)
-            await asyncio.sleep(4)  # stay under Groq free-tier TPM
     return scores, msg_counts
 
 
