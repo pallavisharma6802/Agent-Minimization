@@ -7,3 +7,4 @@ results/*.csv
 !results/.gitkeep
 .DS_Store
 .pytest_cache/
+.llm_cache/

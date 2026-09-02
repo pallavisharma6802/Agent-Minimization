@@ -11,10 +11,14 @@ Backends:
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import re
+import threading
 import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
 
 from .trace import CallRecord, current_trace
@@ -29,8 +33,10 @@ _PRICING = {
     "mock-large": (2.00, 8.00),
     "gemini-2.0-flash": (0.10, 0.40),
     "gemini-2.5-flash": (0.30, 2.50),
+    "gemini-2.5-flash-lite": (0.10, 0.40),
     "gemini-2.5-pro": (1.25, 10.00),
-    "gemini-1.5-flash-8b": (0.0375, 0.15),
+    "gemini-3.5-flash": (0.30, 2.50),
+    "gemini-flash-latest": (0.30, 2.50),
 }
 
 
@@ -66,6 +72,64 @@ class _Meter:
 METER = _Meter()
 
 
+class _RateLimiter:
+    """Simple token-bucket-ish throttle. AGENTSLIM_RPM requests/min (default 12,
+    just under AI Studio free-tier limits). Thread-safe."""
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._times: list[float] = []
+
+    def wait(self) -> None:
+        rpm = float(os.environ.get("AGENTSLIM_RPM", "12"))
+        if rpm <= 0:
+            return
+        with self._lock:
+            now = time.time()
+            self._times = [t for t in self._times if now - t < 60]
+            if len(self._times) >= rpm:
+                sleep_for = 60 - (now - self._times[0]) + 0.05
+                if sleep_for > 0:
+                    time.sleep(sleep_for)
+                    now = time.time()
+                    self._times = [t for t in self._times if now - t < 60]
+            self._times.append(time.time())
+
+
+RATE = _RateLimiter()
+
+
+class _Cache:
+    """On-disk response cache keyed by (backend, model, system, user). Makes
+    re-running a sweep after a crash cheap and keeps ablation trials that reissue
+    identical prompts from paying twice. Dir: AGENTSLIM_CACHE or .llm_cache/"""
+    def __init__(self) -> None:
+        self.dir = Path(os.environ.get("AGENTSLIM_CACHE", ".llm_cache"))
+
+    def _key(self, *parts: str) -> Path:
+        h = hashlib.sha256("\x1f".join(parts).encode()).hexdigest()[:32]
+        return self.dir / f"{h}.json"
+
+    def get(self, *parts: str) -> Optional[str]:
+        if os.environ.get("AGENTSLIM_NOCACHE"):
+            return None
+        p = self._key(*parts)
+        if p.exists():
+            try:
+                return json.loads(p.read_text())["output"]
+            except Exception:
+                return None
+        return None
+
+    def put(self, output: str, *parts: str) -> None:
+        if os.environ.get("AGENTSLIM_NOCACHE"):
+            return
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self._key(*parts).write_text(json.dumps({"output": output}))
+
+
+CACHE = _Cache()
+
+
 @dataclass
 class LLM:
     model: str = "mock-small"
@@ -74,9 +138,17 @@ class LLM:
     _client: object = field(default=None, repr=False)
 
     def complete(self, system: str, user: str, *, agent: str = "?", step: int = 0) -> str:
+        cache_parts = (self.backend, self.model, system, user)
+        cached = CACHE.get(*cache_parts)
         t0 = time.time()
-        out = self._dispatch(system, user)
-        dt = time.time() - t0
+        if cached is not None:
+            out, dt = cached, 0.0
+        else:
+            if self.backend != "mock":
+                RATE.wait()
+            out = self._retrying_dispatch(system, user)
+            dt = time.time() - t0
+            CACHE.put(out, *cache_parts)
 
         in_tok = _estimate_tokens(system) + _estimate_tokens(user)
         out_tok = _estimate_tokens(out)
@@ -95,6 +167,22 @@ class LLM:
                 cost_usd=cost, latency_s=dt,
             ))
         return out
+
+    def _retrying_dispatch(self, system: str, user: str, tries: int = 5) -> str:
+        delay = 2.0
+        for i in range(tries):
+            try:
+                return self._dispatch(system, user)
+            except Exception as e:  # noqa: BLE001
+                msg = str(e).lower()
+                transient = any(s in msg for s in
+                                ("quota", "exhaust", "429", "resource_exhausted",
+                                 "503", "unavailable", "500", "deadline", "timeout"))
+                if not transient or i == tries - 1:
+                    raise
+                time.sleep(delay)
+                delay = min(delay * 2, 60)
+        raise RuntimeError("unreachable")
 
     # -- backends ---------------------------------------------------------
     def _dispatch(self, system: str, user: str) -> str:
