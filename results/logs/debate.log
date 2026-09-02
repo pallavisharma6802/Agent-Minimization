@@ -4,3 +4,24 @@ PLAN  system=debate backend=gemini model=gemini-3.5-flash repeats=2 max_steps=5
 == debate  backend=gemini  repeats=2
 Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
 baseline: acc=1.000±0.000  calls/task=5.0  cost=$0.00129  tokens=1807
+
+verdicts:
+  solver1    capability  -> redundant              move=remove           dAcc=+0.000 save=0.23
+  solver2    capability  -> redundant              move=remove           dAcc=+0.000 save=0.23
+  solver3    capability  -> redundant              move=remove           dAcc=+0.000 save=0.23
+  solver4    capability  -> redundant              move=remove           dAcc=+0.000 save=0.23
+  aggregator capability  -> mergeable              move=merge:solver1+aggregator dAcc=+0.000 save=0.21
+
+headline: {
+  "agents_total": 5,
+  "capability_agents": 5,
+  "reducible_agents": 5,
+  "reducible_frac_of_capability": 1.0,
+  "moves": {
+    "solver1": "remove",
+    "solver2": "remove",
+    "solver3": "remove",
+    "solver4": "remove",
+    "aggregator": "merge:solver1+aggregator"
+  }
+}

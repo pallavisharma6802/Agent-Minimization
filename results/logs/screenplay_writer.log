@@ -1,0 +1,8 @@
+Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+baseline (analyst+scriptwriter+formatter)  score=0.933  calls/run=3.0  $0.00427  (real $0.019)
+no formatter (2)                           score=0.917  calls/run=2.0  $0.00290  (real $0.024)
+no analyst (2)                             score=0.950  calls/run=2.0  $0.00238  (real $0.028)
+scriptwriter only (1)                      score=0.950  calls/run=1.0  $0.00111  (real $0.030)
+merge analyst->scriptwriter (2)            score=0.950  calls/run=2.0  $0.00365  (real $0.036)
+
+real API spend $0.0362 / 22 live calls -> results/screenplay_writer.json
