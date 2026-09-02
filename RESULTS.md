@@ -67,7 +67,47 @@ deployed multi-agent pipelines are over-built.
 
 ---
 
-# Earlier results (pilots + CrewAI/LangGraph)
+---
+
+## Real repo #5 — microsoft/autogen (~40k★), RoundRobinGroupChat
+
+A 3rd framework. 5-role team (planner→solver→critic→verifier→finalizer), 6 hard
+reasoning tasks (7^100 mod 13, the missing-dollar riddle, trailing zeros of 100!,
+etc.), Vertex Gemini, n=2.
+
+| config | agents | score | LLM calls / task |
+|---|---|---|---|
+| team of 5 | 5 | 1.000 | 5.0 |
+| solver + verifier + finalizer | 3 | 1.000 | 3.0 |
+| solver + finalizer | 2 | 1.000 | 2.0 |
+| **solver only** | **1** | **1.000** | **1.0** |
+
+Monotone: 5→1 agents, quality flat, cost linear in headcount. `pareto_scan` → k=1
+(strong model on these tasks). Same pattern as CrewAI, LangGraph, ChatDev.
+
+---
+
+## The pattern across 5 real repos + 3 frameworks
+
+| repo | ★ | framework | shipped agents | right-sized | quality change |
+|---|---|---|---|---|---|
+| ChatDev (strong coder) | 26k | CrewAI-style | 6 | 3 | 0.00 |
+| **ChatDev (weak coder)** | 26k | CrewAI-style | 6 | 3 | **+0.16 (better)** |
+| game-builder-crew | 7k | CrewAI | 3 | 1 | 0.00 |
+| screenplay_writer | 7k | CrewAI | 3 | 1 | +0.02 |
+| langgraph_pipeline | — | LangGraph | 3 | 1 | 0.00 |
+| autogen_groupchat | 40k | AutoGen | 5 | 1 | 0.00 |
+
+Never once did the shipped agent count turn out to be right-sized. Reductions of
+40–83% of LLM calls, quality flat or up. The one case with a weak worker (ChatDev)
+is the sharpest: **the extra agents made it worse.**
+
+This is consistent with the literature ([RESEARCH.md](RESEARCH.md)): Google's
+scaling study, Tran & Kiela's equal-compute result, and MAST all point the same way.
+
+---
+
+# Earlier results (pilots + CrewAI/LangGraph, detail)
 
 All runs: **Gemini `gemini-3.5-flash` via Vertex AI** (`location=global`, project
 `agent-min`), **GCP free-trial credits only** — never activated to paid. Total
