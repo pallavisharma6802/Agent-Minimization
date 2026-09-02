@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/game_builder_crew.py", line 171, in <module>
+    accs, traces = run_config(specs=specs, repeats=repeats, **kw)
+                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/game_builder_crew.py", line 141, in run_config
+    install_shim()
+    ~~~~~~~~~~~~^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/agentslim/adapters/litellm_shim.py", line 59, in install
+    import litellm
+ModuleNotFoundError: No module named 'litellm'

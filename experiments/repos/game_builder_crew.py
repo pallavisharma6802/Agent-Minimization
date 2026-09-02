@@ -42,7 +42,9 @@ if os.path.exists(_envf):
             k, v = _l.split("=", 1)
             os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
 
-from agentslim.adapters.litellm_shim import install as install_shim  # noqa: E402
+os.environ.setdefault("AGENTSLIM_MAX_TOKENS", "6144")  # code generation needs room
+
+from agentslim.adapters.crewai_shim import install as install_shim  # noqa: E402
 from agentslim.trace import Trace  # noqa: E402
 
 CREW_DIR = os.environ.get(
@@ -105,13 +107,18 @@ def build_crew(keep: list[str] | None = None, merges: list[tuple[str, str]] | No
 
 # --------------------------- scoring ---------------------------------
 _CODE_RE = re.compile(r"```(?:python)?\s*(.*?)```", re.S)
+_OPEN_RE = re.compile(r"```(?:python)?\s*(.*)$", re.S)
 
 
 def _extract_code(text: str) -> str:
-    m = _CODE_RE.findall(text or "")
+    text = text or ""
+    m = _CODE_RE.findall(text)
     if m:
         return max(m, key=len)
-    return text or ""
+    m2 = _OPEN_RE.search(text)          # unclosed fence (truncated output)
+    if m2:
+        return m2.group(1)
+    return text
 
 
 def score(final_text: str, spec: str) -> float:
@@ -158,7 +165,7 @@ if __name__ == "__main__":
     import json
     from agentslim.llm import METER
 
-    specs = ("example3_snake",)
+    specs = ("example3_snake", "example1_pacman", "example2_pacman")
     repeats = int(os.environ.get("AGENTSLIM_REPEATS", "2"))
     configs = {
         "baseline (3 agents)": dict(keep=None),

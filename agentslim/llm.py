@@ -138,7 +138,8 @@ class LLM:
     _client: object = field(default=None, repr=False)
 
     def complete(self, system: str, user: str, *, agent: str = "?", step: int = 0) -> str:
-        cache_parts = (self.backend, self.model, system, user)
+        cache_parts = (self.backend, self.model,
+                       os.environ.get("AGENTSLIM_MAX_TOKENS", "512"), system, user)
         cached = CACHE.get(*cache_parts)
         t0 = time.time()
         if cached is not None:
