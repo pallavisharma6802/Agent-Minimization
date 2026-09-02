@@ -9,8 +9,21 @@ import copy
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+import os
+
 from .llm import LLM
 from .trace import Trace
+
+
+def _resolve_model(tag: str) -> str:
+    """On a real backend, map the pilot's abstract size tag to a concrete model.
+    'mock-large' -> AGENTSLIM_MODEL_LARGE (falls back to AGENTSLIM_MODEL)."""
+    if os.environ.get("AGENTSLIM_BACKEND", "mock") == "mock":
+        return tag
+    base = os.environ.get("AGENTSLIM_MODEL", "gemini-2.5-flash")
+    if "large" in tag:
+        return os.environ.get("AGENTSLIM_MODEL_LARGE", base)
+    return os.environ.get("AGENTSLIM_MODEL_SMALL", base)
 
 TASK = "__task__"
 
@@ -71,7 +84,7 @@ class MultiAgentSystem:
                 if a.fn is not None:
                     outputs[a.name] = a.fn(task_text, upstream)
                     continue
-                llm = LLM(model=a.model)
+                llm = LLM(model=_resolve_model(a.model))
                 user = a.render_user(task_text, upstream)
                 outputs[a.name] = llm.complete(a.system_prompt, user, agent=a.name, step=step)
             final = outputs.get(self.sink, "")
