@@ -1,7 +1,11 @@
+[easy] researcher+analyst+writer (3)       score=1.000 calls/q=3.0 (real $0.000)
+[easy] analyst+writer (2)                  score=1.000 calls/q=2.0 (real $0.000)
+[easy] researcher+writer (2)               score=1.000 calls/q=2.0 (real $0.000)
+[easy] writer only (1)                     score=1.000 calls/q=1.0 (real $0.000)
 Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
-researcher+analyst+writer (3)      score=1.000 calls/q=3.0 (real $0.010)
-analyst+writer (2)                 score=1.000 calls/q=2.0 (real $0.015)
-researcher+writer (2)              score=1.000 calls/q=2.0 (real $0.017)
-writer only (1)                    score=1.000 calls/q=1.0 (real $0.018)
+[hard] researcher+analyst+writer (3)       score=0.833 calls/q=3.0 (real $0.019)
+[hard] analyst+writer (2)                  score=0.833 calls/q=2.0 (real $0.029)
+[hard] researcher+writer (2)               score=0.850 calls/q=2.0 (real $0.033)
+[hard] writer only (1)                     score=0.833 calls/q=1.0 (real $0.040)
 
-real API spend $0.0182 / 65 live calls -> results/langgraph_pipeline.json
+real API spend $0.0405 / 66 live calls -> results/langgraph_pipeline.json
