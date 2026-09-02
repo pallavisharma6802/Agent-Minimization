@@ -12,7 +12,17 @@ import os
 import sys
 import time
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
+
+# minimal .env loader (no dependency)
+_envf = os.path.join(_ROOT, ".env")
+if os.path.exists(_envf):
+    for _line in open(_envf):
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
 
 from agentslim import evaluate, greedy_minimize, propose  # noqa: E402
 

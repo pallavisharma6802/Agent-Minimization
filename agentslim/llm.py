@@ -27,6 +27,10 @@ _PRICING = {
     "claude-3-5-sonnet-20241022": (3.00, 15.00),
     "mock-small": (0.10, 0.40),
     "mock-large": (2.00, 8.00),
+    "gemini-2.0-flash": (0.10, 0.40),
+    "gemini-2.5-flash": (0.30, 2.50),
+    "gemini-2.5-pro": (1.25, 10.00),
+    "gemini-1.5-flash-8b": (0.0375, 0.15),
 }
 
 
@@ -70,7 +74,22 @@ class LLM:
             return self._openai(system, user)
         if self.backend == "anthropic":
             return self._anthropic(system, user)
+        if self.backend == "gemini":
+            return self._gemini(system, user)
         raise ValueError(f"unknown backend {self.backend!r}")
+
+    def _gemini(self, system: str, user: str) -> str:
+        if self._client is None:
+            from google import genai
+            self._client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+        from google.genai import types
+        r = self._client.models.generate_content(
+            model=self.model,
+            contents=user,
+            config=types.GenerateContentConfig(
+                system_instruction=system, temperature=self.temperature),
+        )
+        return r.text or ""
 
     def _openai(self, system: str, user: str) -> str:
         if self._client is None:
