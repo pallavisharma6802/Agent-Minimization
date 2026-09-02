@@ -63,12 +63,14 @@ _ALL = ["DemandAnalysis", "LanguageChoose", "Coding", "CodeCompleteAll",
         "CodeReview", "Test", "EnvironmentDoc", "Manual"]
 CONFIGS = {
     "full (6 agents)": _ALL,
-    "no manual/docs": [p for p in _ALL if p not in ("EnvironmentDoc", "Manual")],
     "no CodeReview": [p for p in _ALL if p != "CodeReview"],
     "no Test": [p for p in _ALL if p != "Test"],
     "no Review+Test": [p for p in _ALL if p not in ("CodeReview", "Test")],
     "coding only (CEO+CTO+Prog)": ["LanguageChoose", "Coding", "CodeCompleteAll"],
 }
+if os.environ.get("AGENTSLIM_CONFIGS"):
+    _keep = set(os.environ["AGENTSLIM_CONFIGS"].split("|"))
+    CONFIGS = {k: v for k, v in CONFIGS.items() if any(t in k for t in _keep)}
 
 # --- tasks: spec + hidden functional check ---------------------------
 TASKS = [
@@ -245,11 +247,15 @@ def run_config(phases: list[str], task: dict, tag: str) -> tuple[float, Trace]:
 
 if __name__ == "__main__":
     repeats = int(os.environ.get("AGENTSLIM_REPEATS", "1"))
+    _tasks = TASKS
+    if os.environ.get("AGENTSLIM_TASKS"):
+        _want = os.environ["AGENTSLIM_TASKS"].split(",")
+        _tasks = [t for t in TASKS if t["name"] in _want]
     out = {}
     for cname, phases in CONFIGS.items():
         scores, calls = [], []
         for r in range(repeats):
-            for task in TASKS:
+            for task in _tasks:
                 tag = f"{cname.split()[0].lower()}{r}"
                 try:
                     sc, tr = run_config(phases, task, tag)
