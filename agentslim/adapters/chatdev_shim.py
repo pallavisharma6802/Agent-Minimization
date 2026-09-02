@@ -63,7 +63,8 @@ def install() -> None:
         _cls.__init__ = _mk(_orig_init, _ok)
         _cls._agentslim_patched = True
 
-    model = os.environ.get("AGENTSLIM_MODEL", "gemini-2.5-flash")
+    base_model = os.environ.get("AGENTSLIM_MODEL", "gemini-2.5-flash")
+    coder_model = os.environ.get("AGENTSLIM_MODEL_CODER", base_model)
 
     def run(self, *args, **kwargs):
         messages = kwargs["messages"]
@@ -71,6 +72,9 @@ def install() -> None:
         convo = "\n\n".join(f'{m["role"]}: {m["content"]}'
                             for m in messages if m.get("role") != "system")
         role = _role_hint(messages)
+        # the Programmer writes the code; route it to the (possibly weaker) coder
+        # model so we can test whether Reviewer/Tester actually recover its bugs.
+        model = coder_model if "Programmer" in role else base_model
         parts = ("chatdev", model, system, convo)
 
         cached = CACHE.get(*parts)
@@ -85,7 +89,7 @@ def install() -> None:
 
         in_tok = _estimate_tokens(system) + _estimate_tokens(convo)
         out_tok = _estimate_tokens(text)
-        pin, pout = _PRICING.get(model, (0.5, 1.5))
+        pin, pout = _PRICING.get(model.split("groq/")[-1], (0.5, 1.5))
         cost = (in_tok * pin + out_tok * pout) / 1_000_000
         if cached is None:
             # LLM.complete already metered it; nothing to do

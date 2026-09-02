@@ -37,6 +37,12 @@ _PRICING = {
     "gemini-2.5-pro": (1.25, 10.00),
     "gemini-3.5-flash": (0.30, 2.50),
     "gemini-flash-latest": (0.30, 2.50),
+    # Groq (OpenAI-compatible). prices ~ per 1M tok.
+    "llama-3.1-8b-instant": (0.05, 0.08),
+    "llama-3.3-70b-versatile": (0.59, 0.79),
+    "openai/gpt-oss-20b": (0.10, 0.50),
+    "qwen/qwen3-32b": (0.29, 0.59),
+    "moonshotai/kimi-k2-instruct": (1.00, 3.00),
 }
 
 
@@ -192,6 +198,14 @@ class LLM:
 
     # -- backends ---------------------------------------------------------
     def _dispatch(self, system: str, user: str) -> str:
+        # a "groq/<model>" tag forces the Groq backend regardless of
+        # AGENTSLIM_BACKEND — lets one run mix a weak Groq coder with a strong
+        # Gemini judge. Normalise self.model once so retries/pricing agree.
+        if self.model.startswith("groq/"):
+            self.model = self.model[len("groq/"):]
+            self._force_groq = True
+        if getattr(self, "_force_groq", False):
+            return self._groq(system, user)
         if self.backend == "mock":
             return _mock_complete(self.model, system, user)
         if self.backend == "openai":
@@ -200,7 +214,22 @@ class LLM:
             return self._anthropic(system, user)
         if self.backend == "gemini":
             return self._gemini(system, user)
+        if self.backend == "groq":
+            return self._groq(system, user)
         raise ValueError(f"unknown backend {self.backend!r}")
+
+    def _groq(self, system: str, user: str) -> str:
+        if self._client is None:
+            from openai import OpenAI
+            self._client = OpenAI(api_key=os.environ["GROQ_API_KEY"],
+                                  base_url="https://api.groq.com/openai/v1")
+        r = self._client.chat.completions.create(
+            model=self.model, temperature=self.temperature,
+            max_tokens=int(os.environ.get("AGENTSLIM_MAX_TOKENS", "4096")),
+            messages=[{"role": "system", "content": system},
+                      {"role": "user", "content": user}],
+        )
+        return r.choices[0].message.content or ""
 
     def _gemini(self, system: str, user: str) -> str:
         if self._client is None:
