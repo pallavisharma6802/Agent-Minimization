@@ -26,14 +26,14 @@ for _l in open(os.path.join(_ROOT, ".env")):
 
 from autogen_agentchat.agents import AssistantAgent          # noqa: E402
 from autogen_agentchat.conditions import MaxMessageTermination, TextMentionTermination  # noqa: E402
-from autogen_agentchat.teams import SelectorGroupChat        # noqa: E402
+from autogen_agentchat.teams import SelectorGroupChat, RoundRobinGroupChat        # noqa: E402
 from autogen_core.models import ModelInfo, UserMessage       # noqa: E402
 from autogen_ext.models.openai import OpenAIChatCompletionClient  # noqa: E402
 
 GROQ = dict(base_url="https://api.groq.com/openai/v1", api_key=os.environ["GROQ_API_KEY"],
             model_info=ModelInfo(vision=False, function_calling=True, json_output=False,
                                  family="unknown", structured_output=False))
-WORKER = os.environ.get("AGENTSLIM_MODEL_CODER", "openai/gpt-oss-20b")
+WORKER = os.environ.get("AGENTSLIM_MODEL_CODER", "qwen/qwen3.6-27b")
 JUDGE = os.environ.get("AGENTSLIM_JUDGE", "openai/gpt-oss-120b")
 
 
@@ -67,6 +67,7 @@ ROLES = {
 }
 
 TASKS = [
+    # 6 items to fit Groq free-tier daily budget
     ("What is the remainder when 7^100 is divided by 13?", "9"),
     ("How many positive integers below 1000 are divisible by neither 3 nor 7?", "571"),
     ("A snail climbs 3m up a 10m well by day and slips 2m each night. Which day does it reach the top?", "8"),
@@ -75,9 +76,6 @@ TASKS = [
      "returns $1 to each. Each paid $9 = $27, plus $2 = $29. Where is the missing dollar?",
      "no missing dollar; the $27 already includes the bellhop's $2"),
     ("What is the 12th Fibonacci number if F(1)=F(2)=1?", "144"),
-    ("A store raises a price 20% then discounts the new price 20%. Net change from the original?",
-     "down 4%"),
-    ("How many trailing zeros does 100! have?", "24"),
 ]
 
 CONFIGS = {
@@ -96,9 +94,8 @@ def build_team(keep):
                                      system_message=ROLES[name]))
     if len(agents) == 1:
         return agents[0], None
-    term = TextMentionTermination("FINAL:") | MaxMessageTermination(4 * len(keep))
-    team = SelectorGroupChat(agents, model_client=_mc(WORKER), termination_condition=term,
-                             allow_repeated_speaker=False)
+    term = TextMentionTermination("FINAL:") | MaxMessageTermination(len(keep) + 1)
+    team = RoundRobinGroupChat(agents, termination_condition=term)
     return None, team
 
 
@@ -143,7 +140,7 @@ async def main():
         print(f"{name:<52} score={out[name]['score_mean']:.3f} "
               f"calls/task={out[name]['avg_llm_calls']:.1f}")
     with open(os.path.join(_ROOT, "results", "autogen_groupchat.json"), "w") as f:
-        json.dump({"framework": "microsoft/autogen SelectorGroupChat",
+        json.dump({"framework": "microsoft/autogen RoundRobinGroupChat",
                    "worker_model": WORKER, "judge_model": JUDGE, "configs": out}, f, indent=2)
     print("-> results/autogen_groupchat.json")
 

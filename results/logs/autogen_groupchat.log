@@ -1,4 +1,4 @@
-Error processing publish message for SelectorGroupChatManager_05add8a3-c5b3-415c-9d2f-90b506eb2f33/05add8a3-c5b3-415c-9d2f-90b506eb2f33
+Error processing publish message for verifier_e2df49b1-7dbe-44cf-bfce-e98eaba4becc/e2df49b1-7dbe-44cf-bfce-e98eaba4becc
 Traceback (most recent call last):
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_single_threaded_agent_runtime.py", line 606, in _on_message
     return await agent.on_message(
@@ -18,17 +18,23 @@ Traceback (most recent call last):
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_routed_agent.py", line 268, in wrapper
     return_value = await func(self, message, ctx)  # type: ignore
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat_manager.py", line 164, in handle_agent_response
-    await self._transition_to_next_speakers(ctx.cancellation_token)
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat_manager.py", line 176, in _transition_to_next_speakers
-    speaker_names = await speaker_names_future
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_selector_group_chat.py", line 212, in select_speaker
-    agent_name = await self._select_speaker(roles, participants, self._max_selector_attempts)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_selector_group_chat.py", line 269, in _select_speaker
-    response = await self._model_client.create(messages=select_speaker_messages)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 133, in handle_request
+    async for msg in self._agent.on_messages_stream(self._message_buffer, ctx.cancellation_token):
+    ...<4 lines>...
+            await self._log_message(msg)
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/agents/_assistant_agent.py", line 953, in on_messages_stream
+    async for inference_output in self._call_llm(
+    ...<15 lines>...
+            yield inference_output
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/agents/_assistant_agent.py", line 1109, in _call_llm
+    model_result = await model_client.create(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 54, in create
+    return await super().create(*a, **k)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_ext/models/openai/_openai_client.py", line 704, in create
     result: Union[ParsedChatCompletion[BaseModel], ChatCompletion] = await future
                                                                      ^^^^^^^^^^^^
@@ -43,9 +49,89 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/openai/_base_client.py", line 1777, in request
     raise self._make_status_error_from_response(err.response) from None
-openai.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 5729, Requested 2571. Please try again in 2.25s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199229, Requested 1361. Please try again in 4m14.88s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+Error processing publish message for planner_e2df49b1-7dbe-44cf-bfce-e98eaba4becc/e2df49b1-7dbe-44cf-bfce-e98eaba4becc
 Traceback (most recent call last):
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 134, in <module>
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_single_threaded_agent_runtime.py", line 606, in _on_message
+    return await agent.on_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_sequential_routed_agent.py", line 72, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_routed_agent.py", line 486, in on_message_impl
+    return await self.on_unhandled_message(message, ctx)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 195, in on_unhandled_message
+    raise ValueError(f"Unhandled message in agent container: {type(message)}")
+ValueError: Unhandled message in agent container: <class 'autogen_agentchat.teams._group_chat._events.GroupChatError'>
+Error processing publish message for solver_e2df49b1-7dbe-44cf-bfce-e98eaba4becc/e2df49b1-7dbe-44cf-bfce-e98eaba4becc
+Traceback (most recent call last):
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_single_threaded_agent_runtime.py", line 606, in _on_message
+    return await agent.on_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_sequential_routed_agent.py", line 72, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_routed_agent.py", line 486, in on_message_impl
+    return await self.on_unhandled_message(message, ctx)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 195, in on_unhandled_message
+    raise ValueError(f"Unhandled message in agent container: {type(message)}")
+ValueError: Unhandled message in agent container: <class 'autogen_agentchat.teams._group_chat._events.GroupChatError'>
+Error processing publish message for critic_e2df49b1-7dbe-44cf-bfce-e98eaba4becc/e2df49b1-7dbe-44cf-bfce-e98eaba4becc
+Traceback (most recent call last):
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_single_threaded_agent_runtime.py", line 606, in _on_message
+    return await agent.on_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_sequential_routed_agent.py", line 72, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_routed_agent.py", line 486, in on_message_impl
+    return await self.on_unhandled_message(message, ctx)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 195, in on_unhandled_message
+    raise ValueError(f"Unhandled message in agent container: {type(message)}")
+ValueError: Unhandled message in agent container: <class 'autogen_agentchat.teams._group_chat._events.GroupChatError'>
+Error processing publish message for finalizer_e2df49b1-7dbe-44cf-bfce-e98eaba4becc/e2df49b1-7dbe-44cf-bfce-e98eaba4becc
+Traceback (most recent call last):
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_single_threaded_agent_runtime.py", line 606, in _on_message
+    return await agent.on_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_base_agent.py", line 119, in on_message
+    return await self.on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_sequential_routed_agent.py", line 72, in on_message_impl
+    return await super().on_message_impl(message, ctx)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_core/_routed_agent.py", line 486, in on_message_impl
+    return await self.on_unhandled_message(message, ctx)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 195, in on_unhandled_message
+    raise ValueError(f"Unhandled message in agent container: {type(message)}")
+ValueError: Unhandled message in agent container: <class 'autogen_agentchat.teams._group_chat._events.GroupChatError'>
+Traceback (most recent call last):
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 152, in <module>
     asyncio.run(main())
     ~~~~~~~~~~~^^^^^^^^
   File "/opt/homebrew/Cellar/python@3.13/3.13.11/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/runners.py", line 195, in run
@@ -57,10 +143,10 @@ Traceback (most recent call last):
   File "/opt/homebrew/Cellar/python@3.13/3.13.11/Frameworks/Python.framework/Versions/3.13/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
     return future.result()
            ~~~~~~~~~~~~~^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 121, in main
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 139, in main
     sc, mc = await run_config(keep, repeats)
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 106, in run_config
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 123, in run_config
     r = await team.run(task=q)
         ^^^^^^^^^^^^^^^^^^^^^^
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat.py", line 340, in run
@@ -69,24 +155,30 @@ Traceback (most recent call last):
             result = message
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat.py", line 554, in run_stream
     raise RuntimeError(str(message.error))
-RuntimeError: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 5729, Requested 2571. Please try again in 2.25s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+RuntimeError: RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199229, Requested 1361. Please try again in 4m14.88s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
 Traceback:
 Traceback (most recent call last):
 
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat_manager.py", line 164, in handle_agent_response
-    await self._transition_to_next_speakers(ctx.cancellation_token)
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_chat_agent_container.py", line 133, in handle_request
+    async for msg in self._agent.on_messages_stream(self._message_buffer, ctx.cancellation_token):
+    ...<4 lines>...
+            await self._log_message(msg)
 
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_base_group_chat_manager.py", line 176, in _transition_to_next_speakers
-    speaker_names = await speaker_names_future
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/agents/_assistant_agent.py", line 953, in on_messages_stream
+    async for inference_output in self._call_llm(
+    ...<15 lines>...
+            yield inference_output
 
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_selector_group_chat.py", line 212, in select_speaker
-    agent_name = await self._select_speaker(roles, participants, self._max_selector_attempts)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/agents/_assistant_agent.py", line 1109, in _call_llm
+    model_result = await model_client.create(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
 
-  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_agentchat/teams/_group_chat/_selector_group_chat.py", line 269, in _select_speaker
-    response = await self._model_client.create(messages=select_speaker_messages)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/experiments/repos/autogen_groupchat.py", line 54, in create
+    return await super().create(*a, **k)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/autogen_ext/models/openai/_openai_client.py", line 704, in create
     result: Union[ParsedChatCompletion[BaseModel], ChatCompletion] = await future
@@ -106,5 +198,5 @@ Traceback (most recent call last):
   File "/Users/pallavisharma/Desktop/cold emailing/agent-minimization-research/.venv/lib/python3.13/site-packages/openai/_base_client.py", line 1777, in request
     raise self._make_status_error_from_response(err.response) from None
 
-openai.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 5729, Requested 2571. Please try again in 2.25s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kpbyzzwte3qrrbt11ngw12bn` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199229, Requested 1361. Please try again in 4m14.88s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
 
