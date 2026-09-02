@@ -37,8 +37,25 @@ WORKER = os.environ.get("AGENTSLIM_MODEL_CODER", "openai/gpt-oss-20b")
 JUDGE = os.environ.get("AGENTSLIM_JUDGE", "openai/gpt-oss-120b")
 
 
+class _Retry(OpenAIChatCompletionClient):
+    """Groq free tier is ~8k tokens/min — wrap create() with 429 backoff."""
+    async def create(self, *a, **k):
+        import asyncio as _aio
+        delay = 3.0
+        for i in range(8):
+            try:
+                return await super().create(*a, **k)
+            except Exception as e:  # noqa: BLE001
+                if "429" not in str(e) and "rate_limit" not in str(e).lower():
+                    raise
+                m = re.search(r"try again in ([\d.]+)s", str(e))
+                await _aio.sleep(float(m.group(1)) + 1 if m else delay)
+                delay = min(delay * 1.5, 30)
+        return await super().create(*a, **k)
+
+
 def _mc(model):
-    return OpenAIChatCompletionClient(model=model, temperature=0.0, **GROQ)
+    return _Retry(model=model, temperature=0.0, max_tokens=700, **GROQ)
 
 
 ROLES = {
@@ -111,6 +128,7 @@ async def run_config(keep, repeats=1):
             ans = m.group(1).strip() if m else str(ans)
             scores.append(await _judge(q, ref, ans))
             msg_counts.append(nmsg)
+            await asyncio.sleep(4)  # stay under Groq free-tier TPM
     return scores, msg_counts
 
 
