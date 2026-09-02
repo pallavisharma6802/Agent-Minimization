@@ -25,3 +25,13 @@ headline: {
     "aggregator": "merge:solver1+aggregator"
   }
 }
+
+greedy minimize:
+  remove:solver1         acc=1.000 (d+0.000) agents=4 calls/task=4.0
+  remove:solver2         acc=1.000 (d+0.000) agents=3 calls/task=3.0
+  remove:solver3         acc=1.000 (d+0.000) agents=2 calls/task=2.0
+  remove:aggregator      acc=1.000 (d+0.000) agents=1 calls/task=1.0
+  => 5.0 -> 1.0 calls/task, cost -79%, acc +0.000, final agents: ['solver4']
+
+spent $0.0071 over 192 live calls
+wrote results/debate.json
