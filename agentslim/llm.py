@@ -211,12 +211,23 @@ class LLM:
                 # Google AI Studio: simple API key, has a no-billing free tier.
                 self._client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         from google.genai import types
-        r = self._client.models.generate_content(
-            model=self.model,
-            contents=user,
-            config=types.GenerateContentConfig(
-                system_instruction=system, temperature=self.temperature),
-        )
+        cfg = dict(system_instruction=system, temperature=self.temperature,
+                   max_output_tokens=int(os.environ.get("AGENTSLIM_MAX_TOKENS", "512")))
+        # kill thinking-token spend where the model/SDK supports it
+        try:
+            budget = int(os.environ.get("AGENTSLIM_THINKING_BUDGET", "0"))
+            cfg["thinking_config"] = types.ThinkingConfig(thinking_budget=budget)
+        except Exception:
+            pass
+        try:
+            r = self._client.models.generate_content(
+                model=self.model, contents=user,
+                config=types.GenerateContentConfig(**cfg))
+        except Exception:
+            cfg.pop("thinking_config", None)
+            r = self._client.models.generate_content(
+                model=self.model, contents=user,
+                config=types.GenerateContentConfig(**cfg))
         return r.text or ""
 
     def _openai(self, system: str, user: str) -> str:

@@ -68,6 +68,8 @@ def _candidates(sys: MultiAgentSystem):
 def greedy_minimize(sys: MultiAgentSystem, tasks: list[Task], repeats: int = 5,
                     tol_sigma: float = 1.0, abs_tol: float = 0.02,
                     max_steps: int = 12) -> MinimizeResult:
+    import os as _os
+    max_steps = int(_os.environ.get("AGENTSLIM_MAX_STEPS", max_steps))
     original = evaluate(sys, tasks, repeats)
     band = max(abs_tol, tol_sigma * original.acc_std)
     cur, cur_stats = sys.clone(), original
