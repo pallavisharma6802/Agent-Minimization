@@ -1,6 +1,0 @@
-Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
-team of 5 (planner/solver/critic/verifier/finalizer) score=1.000 calls/task=5.0
-solver + verifier + finalizer (3)                    score=1.000 calls/task=3.0
-solver + finalizer (2)                               score=1.000 calls/task=2.0
-solver only (1)                                      score=1.000 calls/task=1.0
--> results/autogen_groupchat.json

@@ -1,11 +1,12 @@
 .venv/
+.venv-*/
 __pycache__/
 *.pyc
+*.egg-info/
 .env
-results/*.json
-results/*.csv
+.llm_cache/
+results/
 !results/.gitkeep
+archive/**/results/
 .DS_Store
 .pytest_cache/
-.llm_cache/
-.venv-chatdev/

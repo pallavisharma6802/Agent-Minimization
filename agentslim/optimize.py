@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 from . import ablations
 from .ablations import BoundaryViolation
-from .harness import Task, evaluate, _adjacent_pairs
+from .eval import Task, evaluate, adjacent_pairs as _adjacent_pairs
 from .system import MultiAgentSystem
 
 
