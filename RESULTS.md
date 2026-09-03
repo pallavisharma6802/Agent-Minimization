@@ -1,9 +1,17 @@
 # Results (2026-09-02)
 
-> **Update — method reframe.** The objective is no longer "shrink to 1." `pareto_scan`
-> now sweeps *every* team size, records quality vs cost at each, and recommends the
-> **knee** — the smallest team whose quality still matches the best. A system that
-> genuinely needs 4 agents reports 4. On the ChatDev repo below the answer is **3, not 1.**
+> **⚠️ Read [WHY_MULTIAGENT.md](WHY_MULTIAGENT.md) before trusting any "collapse to N"
+> number below.** These experiments scored **task accuracy only** — the one axis
+> where multi-agent is weakest — on tasks small enough to fit one context window.
+> They say nothing about the reasons companies actually run multi-agent (context
+> capacity, permission scoping, parallelism, org ownership, compliance, reliability).
+> `pareto_scan` now enforces structural boundaries and only sweeps agents that are
+> pure task-decomposition; see the `enterprise_support` demo where it correctly keeps
+> **5 of 7** agents.
+>
+> **Method reframe.** The objective is *not* "shrink to 1." `pareto_scan` sweeps team
+> sizes over the structurally-unjustified agents only, and reports per-agent
+> disposition + why each protected agent was left alone.
 
 ---
 

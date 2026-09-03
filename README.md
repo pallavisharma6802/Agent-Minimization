@@ -1,15 +1,21 @@
 # Agent Minimization
 
-**How much of a multi-agent system is actually load-bearing?**
+**Which agents in a multi-agent system exist for no structural reason?**
 
-Multi-agent LLM systems are everywhere, but most are over-built. Papers and cost analyses
-(UC Berkeley MAST, Cognition's "Don't Build Multi-Agents", Anthropic's ~15× token cost)
-all point the same way: many agents exist because of context-window limits, cargo-culting,
-or demo aesthetics — not real task decomposition. Every extra agent is also extra cost,
-extra latency, and one more trust boundary an attacker can cross.
+> ⚠️ **Read [WHY_MULTIAGENT.md](WHY_MULTIAGENT.md) first.** Early runs of this project
+> kept "shrinking to 1 agent" — that was a **measurement artifact**: the tool only
+> scored task accuracy, and companies don't build multi-agent for accuracy. They build
+> it for context capacity, permission scoping, parallel throughput, org ownership, model
+> heterogeneity, compliance gating and reliability. The tool now respects those
+> boundaries and only sweeps agents that are pure task-decomposition with no structural
+> justification.
 
-This project measures that bloat on **real open-source systems** and builds a tool that
-proposes concrete, safe reductions.
+Multi-agent LLM systems mix agents that are load-bearing for hard structural reasons
+with agents that are cargo-cult sequential decomposition. The second kind is common,
+adds cost and latency, and — per UC Berkeley's MAST and our ChatDev weak-coder run —
+sometimes *degrades* quality through error compounding. This project tells the two apart
+on **real open-source systems**, respecting every structural boundary, and backs each
+"removable" call with an ablation.
 
 ---
 

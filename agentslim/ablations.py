@@ -1,13 +1,20 @@
 """Ablation strategies — the "different ways" to shrink a multi-agent system.
 
-Each returns a new MultiAgentSystem. Oversight agents are never targeted by the
-automatic sweep (see harness.propose), but the primitives here don't forbid it.
+Each returns a new MultiAgentSystem. By default these primitives now REFUSE to
+touch an agent that a structural boundary protects (distinct tools / permissions /
+data scope / owner / model, or a non-capability role_type) — see WHY_MULTIAGENT.md
+for why "collapse to 1" is the wrong objective. Pass force=True only for
+research/what-if runs that deliberately ignore boundaries.
 """
 from __future__ import annotations
 
 from typing import Callable
 
 from .system import TASK, Agent, MultiAgentSystem
+
+
+class BoundaryViolation(RuntimeError):
+    """Raised when an ablation would cross a structural boundary."""
 
 
 def _rewire_consumers(sys: MultiAgentSystem, dropped: str, replacement_inputs: list[str]) -> None:
@@ -17,8 +24,12 @@ def _rewire_consumers(sys: MultiAgentSystem, dropped: str, replacement_inputs: l
             a.inputs = a.inputs[:i] + [s for s in replacement_inputs if s not in a.inputs] + a.inputs[i + 1:]
 
 
-def remove(sys: MultiAgentSystem, name: str) -> MultiAgentSystem:
+def remove(sys: MultiAgentSystem, name: str, force: bool = False) -> MultiAgentSystem:
     """Delete an agent; its consumers now read its inputs directly."""
+    if not force:
+        block = sys.structural_block(name)
+        if block:
+            raise BoundaryViolation(f"cannot remove {name!r}: {block}")
     s = sys.clone()
     victim = s.by_name(name)
     if s.sink == name:
@@ -30,8 +41,12 @@ def remove(sys: MultiAgentSystem, name: str) -> MultiAgentSystem:
     return s
 
 
-def identity(sys: MultiAgentSystem, name: str) -> MultiAgentSystem:
+def identity(sys: MultiAgentSystem, name: str, force: bool = False) -> MultiAgentSystem:
     """Replace an agent with a no-LLM pass-through of its upstream text."""
+    if not force:
+        block = sys.structural_block(name)
+        if block:
+            raise BoundaryViolation(f"cannot neutralize {name!r}: {block}")
     s = sys.clone()
     a = s.by_name(name)
 
@@ -56,9 +71,14 @@ def downgrade(sys: MultiAgentSystem, name: str, model: str) -> MultiAgentSystem:
     return s
 
 
-def merge(sys: MultiAgentSystem, a_name: str, b_name: str) -> MultiAgentSystem:
+def merge(sys: MultiAgentSystem, a_name: str, b_name: str, force: bool = False) -> MultiAgentSystem:
     """Fold b into a: one agent, concatenated role prompts, unioned inputs.
-    Consumers of either now consume the merged agent."""
+    Consumers of either now consume the merged agent. Refuses across any
+    structural boundary unless force=True."""
+    if not force:
+        why = sys.merge_allowed(a_name, b_name)
+        if why:
+            raise BoundaryViolation(f"cannot merge {a_name!r}+{b_name!r}: {why}")
     s = sys.clone()
     a, b = s.by_name(a_name), s.by_name(b_name)
     merged = Agent(
@@ -66,6 +86,8 @@ def merge(sys: MultiAgentSystem, a_name: str, b_name: str) -> MultiAgentSystem:
         system_prompt=a.system_prompt.rstrip() + "\n\nAlso: " + b.system_prompt.strip(),
         kind="oversight" if "oversight" in (a.kind, b.kind) else "capability",
         model=a.model if _price_rank(a.model) >= _price_rank(b.model) else b.model,
+        role_type=a.role_type, tools=a.tools | b.tools, permissions=a.permissions | b.permissions,
+        data_scope=a.data_scope or b.data_scope, owner=a.owner or b.owner,
         inputs=[x for x in (a.inputs + b.inputs) if x != a_name and x != b_name] or [TASK],
     )
     # dedupe inputs, keep order
